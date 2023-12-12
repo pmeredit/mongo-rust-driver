@@ -92,7 +92,7 @@ async-executor = { version = "=1.5.1", optional = true }  # TODO RUST-1768: remo
 async-trait = "0.1.42"
 base64 = "0.13.0"
 bitflags = "1.1.0"
-bson = { git = "https://github.com/mongodb/bson-rust", branch = "main" }
+bson = "2"
 chrono = { version = "0.4.7", default-features = false, features = ["clock", "std"] }
 derivative = "2.1.1"
 derive_more = "0.99.17"
