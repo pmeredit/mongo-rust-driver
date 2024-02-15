@@ -227,8 +227,8 @@ redirect_uri={redirect_uri}&\
 state={state_str}&\
 scope=openid+offline_access",
     );
-    println!("Authorize at {authorize_url}");
-    //open::with(authorize_url, "firefox").unwrap();
+    //println!("Authorize at {authorize_url}");
+    open::with(authorize_url, "firefox").unwrap();
 
     let auth_code = listener(host, 7999).await;
     println!("Listener closed down");
