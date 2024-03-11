@@ -164,7 +164,7 @@ async fn human_single_principal_explicit_username() -> anyhow::Result<()> {
     let call_count = Arc::new(Mutex::new(0));
     let cb_call_count = call_count.clone();
 
-    let mut opts = ClientOptions::parse(mongodb_uri!("test_user1")).await?;
+    let mut opts = ClientOptions::parse(mongodb_uri_single!("test_user1")).await?;
     opts.credential = Credential::builder()
         .mechanism(AuthMechanism::MongoDbOidc)
         .oidc_callback(oidc::Callback::human(move |_| {
