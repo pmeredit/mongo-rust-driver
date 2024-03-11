@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 
 macro_rules! mongodb_uri {
     () => {
-        "mongodb://localhost/"
+        "mongodb://localhost"
     };
     ( $user:literal ) => {
         concat!("mongodb://", $user, "@localhost/")
@@ -19,10 +19,10 @@ macro_rules! mongodb_uri {
 
 macro_rules! mongodb_uri_single {
     () => {
-        concat!(mongodb_uri!(), "?authMechanism=MONGODB-OIDC")
+        concat!(mongodb_uri!(), "/?authMechanism=MONGODB-OIDC")
     };
     ( $user:literal ) => {
-        concat!(mongodb_uri!($user), "?authMechanism=MONGODB-OIDC")
+        concat!(mongodb_uri!($user), "/?authMechanism=MONGODB-OIDC")
     };
 }
 
@@ -30,13 +30,13 @@ macro_rules! mongodb_uri_multi {
     () => {
         concat!(
             mongodb_uri!(),
-            "?authMechanism=MONGODB-OIDC&directConnection=true"
+            ":27018/?authMechanism=MONGODB-OIDC&directConnection=true"
         )
     };
     ( $user:literal ) => {
         concat!(
             mongodb_uri!($user),
-            "?authMechanism=MONGODB-OIDC&directConnection=true"
+            ":27018/?authMechanism=MONGODB-OIDC&directConnection=true"
         )
     };
 }
