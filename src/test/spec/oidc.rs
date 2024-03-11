@@ -13,7 +13,7 @@ macro_rules! mongodb_uri {
         "mongodb://localhost"
     };
     ( $user:literal ) => {
-        concat!("mongodb://", $user, "@localhost/")
+        concat!("mongodb://", $user, "@localhost")
     };
 }
 
