@@ -43,7 +43,7 @@ macro_rules! mongodb_uri_multi {
 
 macro_rules! token_dir {
     ( $path: literal ) => {
-        concat!("/tmp/tokens", $path)
+        concat!("/tmp/tokens/", $path)
     };
 }
 
