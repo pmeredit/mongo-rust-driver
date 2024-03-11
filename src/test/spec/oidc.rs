@@ -214,7 +214,7 @@ async fn human_multiple_principal_user1() -> anyhow::Result<()> {
     let call_count = Arc::new(Mutex::new(0));
     let cb_call_count = call_count.clone();
 
-    let mut opts = ClientOptions::parse(mongodb_uri_multi!("user1")).await?;
+    let mut opts = ClientOptions::parse(mongodb_uri_multi!("test_user1")).await?;
     opts.credential = Credential::builder()
         .mechanism(AuthMechanism::MongoDbOidc)
         .oidc_callback(oidc::Callback::human(move |_| {
@@ -264,7 +264,7 @@ async fn human_multiple_principal_user2() -> anyhow::Result<()> {
     let call_count = Arc::new(Mutex::new(0));
     let cb_call_count = call_count.clone();
 
-    let mut opts = ClientOptions::parse(mongodb_uri_multi!("user2")).await?;
+    let mut opts = ClientOptions::parse(mongodb_uri_multi!("test_user2")).await?;
     opts.credential = Credential::builder()
         .mechanism(AuthMechanism::MongoDbOidc)
         .oidc_callback(oidc::Callback::human(move |_| {
