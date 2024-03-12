@@ -48,9 +48,9 @@ macro_rules! token_dir {
 }
 
 // Machine Callback tests
-// Prose test 1.1 Single Principal Implicit Username
+// Callback is called during authentication
 #[tokio::test]
-async fn machine_single_principal_implicit_username() -> anyhow::Result<()> {
+async fn machine_callback_is_called() -> anyhow::Result<()> {
     use bson::Document;
     use futures_util::FutureExt;
 
@@ -86,6 +86,62 @@ async fn machine_single_principal_implicit_username() -> anyhow::Result<()> {
         .collection::<Document>("test")
         .find_one(None, None)
         .await?;
+    assert_eq!(1, *(*call_count).lock().unwrap());
+    Ok(())
+}
+
+// 1.2 Callback is called once for multiple connections
+#[tokio::test]
+async fn machine_callback_is_called_only_once() -> anyhow::Result<()> {
+    use bson::Document;
+    use futures_util::FutureExt;
+
+    if std::env::var("OIDC_TOKEN_DIR").is_err() {
+        log_uncaptured("Skipping OIDC test");
+        return Ok(());
+    }
+
+    // we need to assert that the callback is only called once
+    let call_count = Arc::new(Mutex::new(0));
+    let cb_call_count = call_count.clone();
+
+    let mut opts = ClientOptions::parse(mongodb_uri_single!()).await?;
+    opts.credential = Credential::builder()
+        .mechanism(AuthMechanism::MongoDbOidc)
+        .oidc_callback(oidc::Callback::machine(move |_| {
+            let call_count = cb_call_count.clone();
+            *call_count.lock().unwrap() += 1;
+            async move {
+                Ok(oidc::IdpServerResponse {
+                    access_token: tokio::fs::read_to_string(token_dir!("test_user1")).await?,
+                    expires: None,
+                    refresh_token: None,
+                })
+            }
+            .boxed()
+        }))
+        .build()
+        .into();
+    let client = Client::with_options(opts)?;
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(10)
+        .enable_all()
+        .build()
+        .unwrap();
+    let mut handles = Vec::with_capacity(10);
+    for _ in 0..10 {
+        let client = client.clone();
+        handles.push(runtime.spawn(async move {
+            client
+                .database("test")
+                .collection::<Document>("test")
+                .find_one(None, None)
+                .await
+        }));
+    }
+    for handle in handles {
+        handle.await.unwrap().unwrap();
+    }
     assert_eq!(1, *(*call_count).lock().unwrap());
     Ok(())
 }
@@ -214,7 +270,7 @@ async fn human_multiple_principal_user1() -> anyhow::Result<()> {
     let call_count = Arc::new(Mutex::new(0));
     let cb_call_count = call_count.clone();
 
-    let mut opts = ClientOptions::parse(mongodb_uri_multi!("test_user1")).await?;
+    let mut opts = ClientOptions::parse(mongodb_uri_multi!("user1")).await?;
     opts.credential = Credential::builder()
         .mechanism(AuthMechanism::MongoDbOidc)
         .oidc_callback(oidc::Callback::human(move |_| {
@@ -264,7 +320,7 @@ async fn human_multiple_principal_user2() -> anyhow::Result<()> {
     let call_count = Arc::new(Mutex::new(0));
     let cb_call_count = call_count.clone();
 
-    let mut opts = ClientOptions::parse(mongodb_uri_multi!("test_user2")).await?;
+    let mut opts = ClientOptions::parse(mongodb_uri_multi!("user2")).await?;
     opts.credential = Credential::builder()
         .mechanism(AuthMechanism::MongoDbOidc)
         .oidc_callback(oidc::Callback::human(move |_| {
