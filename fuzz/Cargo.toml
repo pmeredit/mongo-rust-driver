@@ -1,0 +1,23 @@
+[package]
+name = "mongodb-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+byteorder = "1.5"
+
+[dependencies.mongodb]
+path = ".."
+features = ["default"]
+
+[[bin]]
+name = "message_header_length"
+path = "fuzz_targets/message_header_length.rs"
+test = false
+doc = false
+bench = false
