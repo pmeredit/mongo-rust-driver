@@ -1,7 +1,9 @@
-use std::fs;
-use std::io::{self, Write};
-use std::path::Path;
 use byteorder::{LittleEndian, WriteBytesExt};
+use std::{
+    fs,
+    io::{self, Write},
+    path::Path,
+};
 
 const DEFAULT_MAX_MESSAGE_SIZE_BYTES: i32 = 48 * 1024 * 1024; // 48MB
 
@@ -12,7 +14,7 @@ fn create_test_case(
     response_to: i32,
     op_code: i32,
 ) -> io::Result<()> {
-    let mut file = fs::File::create(filename)?;
+    let file = fs::File::create(filename)?;
     let mut writer = io::BufWriter::new(file);
 
     // Write header fields in little-endian format
@@ -27,29 +29,30 @@ fn create_test_case(
 
 fn main() -> io::Result<()> {
     // Create corpus directory
-    let corpus_dir = Path::new("corpus").join("message_header_length");
+    let corpus_dir = Path::new("..").join("corpus").join("message_header_length");
     fs::create_dir_all(&corpus_dir)?;
 
     // Define test cases with their expected values
     let test_cases = [
-        ("max_valid_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES),     // 48MB
-        ("near_i32_max", i32::MAX - 1),                          // Almost max i32
-        ("negative_length", -1),                                  // Negative length
-        ("exact_max_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES),     // Exactly 48MB
-        ("over_max_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES + 1),  // Just over 48MB
+        ("max_valid_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES), // 48MB
+        ("near_i32_max", i32::MAX - 1),                       // Almost max i32
+        ("negative_length", -1),                              // Negative length
+        ("exact_max_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES), // Exactly 48MB
+        ("over_max_length", DEFAULT_MAX_MESSAGE_SIZE_BYTES + 1), // Just over 48MB
     ];
 
     // Create test cases
     for (name, length) in test_cases.iter() {
         let file_path = corpus_dir.join(name);
         create_test_case(
-            &file_path,
-            *length,
-            1,              // request_id
-            0,              // response_to
-            2013,           // op_code (OP_MSG)
+            &file_path, *length, 1,    // request_id
+            0,    // response_to
+            2013, // op_code (OP_MSG)
         )?;
-        println!("Created test case '{}' with length {} (0x{:08x})", name, length, length);
+        println!(
+            "Created test case '{}' with length {} (0x{:08x})",
+            name, length, length
+        );
     }
 
     Ok(())
